@@ -1,27 +1,21 @@
 # server/app.py
 #!/usr/bin/env python3
+# server/seed.py
 
-from flask import Flask, make_response
-from flask_migrate import Migrate
-
+from app import app
 from models import db, Earthquake
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.json.compact = False
+with app.app_context():
 
-migrate = Migrate(app, db)
-db.init_app(app)
+    # Delete all rows in the "earthquakes" table
+    Earthquake.query.delete()
 
+    # Add several Earthquake instances to the "earthquakes" table
+    db.session.add(Earthquake(magnitude=9.5, location="Chile", year=1960))
+    db.session.add(Earthquake(magnitude=9.2, location="Alaska", year=1964))
+    db.session.add(Earthquake(magnitude=8.6, location="Alaska", year=1946))
+    db.session.add(Earthquake(magnitude=8.5, location="Banda Sea", year=1934))
+    db.session.add(Earthquake(magnitude=8.4, location="Chile", year=1922))
 
-@app.route('/')
-def index():
-    body = {'message': 'Flask SQLAlchemy Lab 1'}
-    return make_response(body, 200)
-
-# Add views here
-
-
-if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    # Commit the transaction
+    db.session.commit()
